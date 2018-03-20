@@ -51,14 +51,12 @@ class UserService(private val userRepository: UserRepository) {
 
     fun cancelTransfer(userId: String, transferAuthCode: UUID): Boolean {
         val transfer = userRepository.transfers(userId)?.find { it.authCode == transferAuthCode }
-        return if (transfer != null && transfer.status == TransferStatus.AUTHORIZED) {
+        if (transfer != null && transfer.status == TransferStatus.AUTHORIZED) {
             userRepository.setTransferStatus(userId, transfer.id, TransferStatus.CANCELED)
             if (transfer.amount < BigDecimal.ZERO) {
                 userRepository.addBalance(userId, transfer.amount.negate())
             }
-            true
-        } else {
-            false
         }
+        return transfer != null
     }
 }
